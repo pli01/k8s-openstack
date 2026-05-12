@@ -1,0 +1,22 @@
+---
+#pod:
+#  replicas:
+#    api: 1
+
+images:
+  tags:
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    ks_service: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    ks_endpoints: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    bootstrap: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+
+manifests:
+  job_image_repo_sync: false
+  job_storage_init: false
+
+storage: pvc
+
+volume:
+  size: 5Gi

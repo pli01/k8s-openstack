@@ -1,0 +1,7 @@
+---
+images:
+  tags:
+    memcached: memcached:1.6.41
+
+manifests:
+  job_image_repo_sync: false

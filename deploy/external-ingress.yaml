@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keystone-api
+
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+spec:
+  ingressClassName: ingress-openstack
+
+  rules:
+    - host: keystone.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keystone-api
+                port:
+                  number: 5000
+    - host: horizon.127.0.0.1.nip.io
+      http:
+        paths:
+        - backend:
+            service:
+              name: horizon-int
+              port:
+                name: web
+          path: /
+          pathType: Prefix
+    - host: glance.127.0.0.1.nip.io
+      http:
+        paths:
+        - backend:
+            service:
+              name: glance-api
+              port:
+                number: 9292
+          path: /
+          pathType: Prefix
+    - host: heat.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: heat-api
+                port:
+                  number: 8004
+    - host: cinder.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cinder-api
+                port:
+                  number: 8776

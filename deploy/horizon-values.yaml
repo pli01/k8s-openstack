@@ -1,0 +1,11 @@
+---
+images:
+  tags:
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+
+#endpoints:
+#  dashboard:
+#    host_fqdn_override:
+#      public:
+#        host: horizon.192.168.105.2.nip.io

@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    ceph_config_helper: 'quay.io/airshipit/ceph-config-helper:ubuntu_jammy_20.2.1-1-20260407'
+

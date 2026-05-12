@@ -1,0 +1,11 @@
+manifests:
+  job_image_repo_sync: false
+images:
+  tags:
+    bootstrap: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    keystone_credential_cleanup: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260517
+
