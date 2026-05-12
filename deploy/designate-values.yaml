@@ -1,0 +1,106 @@
+images:
+  tags:
+    bootstrap: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    rabbit_init: docker.io/rabbitmq:3.13-management
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    ks_service: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    ks_endpoints: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    dep_check: quay.io/airshipit/kubernetes-entrypoint:latest-ubuntu_noble
+    designate_db_sync: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_api: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_central: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_mdns: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_worker: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_producer: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_sink: quay.io/airshipit/designate:2026.1-ubuntu_noble
+    designate_service_cleaner: quay.io/airshipit/designate:2026.1-ubuntu_noble
+
+pod:
+  mounts:
+    designate_service_cleaner:
+      designate_service_cleaner:
+        volumes:
+           - name: designate-etc-snippets
+             emptyDir: {}
+
+conf:
+  designate:
+    # needed to fix pending state
+    mdns:
+      host: designate-mdns.openstack.svc.cluster.local
+      port: 5354
+    service:central:
+      workers: 1
+    service:producer:
+      workers: 1
+    service:mdns:
+      workers: 1
+    service:worker:
+      workers: 1
+  designate_api_uwsgi:
+    uwsgi:
+      add-header: "Connection: close"
+      buffer-size: 65535
+      die-on-term: true
+      enable-threads: true
+      exit-on-reload: false
+      hook-master-start: unix_signal:15 gracefully_kill_them_all
+      lazy-apps: true
+      log-x-forwarded-for: true
+      master: true
+      procname-prefix-spaced: "designate-api:"
+      route-user-agent: '^kube-probe.* donotlog:'
+      thunder-lock: true
+      worker-reload-mercy: 80
+      # new wsgi module
+      module: designate.wsgi.api:application
+      stats: 0.0.0.0:1717
+      stats-http: true
+
+  pools: |
+    - name: default
+      # The name is immutable. There will be no option to change the name after
+      # creation and the only way will to change it will be to delete it
+      # (and all zones associated with it) and recreate it.
+      description: Default Pool
+
+      attributes: {}
+
+      # List out the NS records for zones hosted within this pool
+      # This should be a record that is created outside of designate, that
+      # points to the public IP of the controller node.
+      ns_records:
+        - hostname: {{ printf "ns.%s.svc.%s." .Release.Namespace .Values.endpoints.cluster_domain_suffix }}
+          priority: 1
+
+      # List out the nameservers for this pool. These are the actual DNS servers.
+      # We use these to verify changes have propagated to all nameservers.
+      nameservers:
+        # IP of bind9 svc
+        - host: 10.100.161.137
+          port: {{ tuple "powerdns" "internal" "powerdns" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
+
+      # List out the targets for this pool. For BIND there will be one
+      # entry for each BIND server, as we have to run rndc command on each server
+      targets:
+        - type: bind9
+          description: BIND9 Server
+
+          # List out the designate-mdns servers from which PowerDNS servers should
+          # request zone transfers (AXFRs) from.
+          # This should be the IP of the controller node.
+          # If you have multiple controllers you can add multiple masters
+          # by running designate-mdns on them, and adding them here.
+          masters:
+            - host: ${MINIDNS_SERVICE_HOST}
+              port: {{ tuple "mdns" "internal" "ipc" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
+
+          # Bind9 Configuration options
+          options:
+            host: bind9.dns-system.svc.cluster.local
+            port: {{ tuple "powerdns" "internal" "powerdns" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
+            rndc_host: bind9.dns-system.svc.cluster.local
+            rndc_port: 953
+            rndc_key_file: /etc/designate/rndc.key

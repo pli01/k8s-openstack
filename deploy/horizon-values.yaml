@@ -1,0 +1,18 @@
+---
+images:
+  tags:
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    horizon_db_sync: quay.io/airshipit/horizon-heat:2026.1-ubuntu_noble-20260530
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    horizon: quay.io/airshipit/horizon-heat:2026.1-ubuntu_noble-20260530
+
+conf:
+  horizon:
+    # horizon image contains heat
+    extra_panels: []
+
+#endpoints:
+#  dashboard:
+#    host_fqdn_override:
+#      public:
+#        host: horizon.192.168.105.2.nip.io

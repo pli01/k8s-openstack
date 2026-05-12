@@ -1,0 +1,75 @@
+# Warning: this value is intentionally plaintext for demonstration purposes
+# DO NOT USE IN PRODUCTION
+superuser:
+  name: admin
+  email: admin@example.com
+  password: "_REPLACE_ME_"
+  apiToken: ""
+  existingSecret: ""
+
+# Setting this to True will permit only authenticated users to access any part
+# of NetBox. By default, anonymous users are permitted to access most data in
+# NetBox but not make any changes.
+loginRequired: false
+
+persistence:
+  enabled: true
+  ## Data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
+  subPath: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  existingClaim: ""
+  annotations: {}
+
+## Configure the ingress resource that allows you to access the app
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
+ingress:
+  ## @param ingress.enabled Enable ingress record generation
+  ##
+  enabled: true
+  ## @param ingress.pathType Ingress Path type
+  ##
+  pathType: ImplementationSpecific
+  ## @param ingress.ingressClassName IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
+  ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster .
+  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+  ##
+  className: ""
+  ## @param ingress.annotations Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations.
+  ## Use this parameter to set the required annotations for cert-manager, see
+  ## ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
+  ##
+  ## e.g:
+  ## annotations:
+  ##   kubernetes.io/ingress.class: traefik
+  ##   cert-manager.io/cluster-issuer: cluster-issuer-name
+  ##
+  annotations: {}
+  hosts:
+    - host: netbox.127.0.0.1.nip.io
+      paths:
+        - /
+
+  tls: []
+## PostgreSQL chart configuration
+## https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
+##
+postgresql:
+  ## @param postgresql.enabled Whether to deploy a PostgreSQL server to satisfy the applications database requirements
+  ## To use an external database set this to false and configure the externalDatabase parameters
+  ##
+  enabled: true
+  auth:
+    username: netbox
+    database: netbox
+# Warning: this value is intentionally plaintext for demonstration purposes
+# DO NOT USE IN PRODUCTION
+    password: _REPLACE_ME_

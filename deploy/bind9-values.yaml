@@ -1,0 +1,67 @@
+image:
+  repository: ubuntu/bind9
+  tag: 9.20-26.04_edge
+
+bind:
+  namedConf: |
+    key "rndc-key" {
+      algorithm hmac-sha256;
+      # Replace with rndc secret key
+      secret "${RNDC_SECRET_KEY}";
+    };
+
+    controls {
+      inet 0.0.0.0 port 953
+      allow {
+        127.0.0.1;
+        any;
+      }
+      keys { "rndc-key"; };
+    };
+
+    options {
+      directory "/var/cache/bind";
+      listen-on port 53 { any; };
+      # listen-on-v6 { any; };
+      allow-new-zones yes;
+      dnssec-validation auto;
+      auth-nxdomain no;
+      request-ixfr no;
+      recursion no;
+
+      forwarders {
+        # DNS4EU
+        86.54.11.100;
+      };
+      allow-query {
+        127.0.0.1;
+        # pod
+        10.0.0.0/8;
+        # CONTROLLER_SERVER_IP
+        #${CONTROLLER_SERVER_IP};
+        192.168.105.31;
+      };
+      minimal-responses yes;
+      #allow-recursion { any; };
+    };
+    logging {
+        channel query_log {
+            stderr;
+            severity info;
+            print-time yes;
+            print-category yes;
+        };
+
+        category queries { query_log; };
+    };
+  zones: {}
+
+metrics:
+  serviceMonitor:
+    enabled: false
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  storageClass: standard # "general"
+  emptyDirSizeLimit: 2Gi
