@@ -1,0 +1,21 @@
+---
+pod:
+  replicas:
+    server: 1
+
+images:
+  tags:
+    rabbitmq: rabbitmq:3.13 # old policies
+    scripted_test: rabbitmq:3.13-management
+    prometheus_rabbitmq_exporter_helm_tests: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    rabbitmq_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+
+manifests:
+  job_image_repo_sync: false
+
+volume:
+  size: 5Gi
+
+monitoring:
+  prometheus:
+    enabled: false

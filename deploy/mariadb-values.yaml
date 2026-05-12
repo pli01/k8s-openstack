@@ -1,0 +1,19 @@
+---
+pod:
+  replicas:
+    server: 1
+
+images:
+  tags:
+    prometheus_mysql_exporter_helm_tests: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+
+manifests:
+  job_image_repo_sync: false
+
+volume:
+  size: 2Gi
+
+monitoring:
+  prometheus:
+    enabled: false

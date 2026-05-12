@@ -1,0 +1,56 @@
+images:
+  tags:
+    db_init: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    db_drop: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    rabbit_init: docker.io/rabbitmq:3.13-management
+    ks_user: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    ks_service: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    ks_endpoints: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    bootstrap: quay.io/airshipit/openstack-client:2026.1-ubuntu_noble-20260609
+    cinder_storage_init: quay.io/airshipit/ceph-config-helper:ubuntu_jammy_20.2.1-1-20260407
+    cinder_backup: quay.io/airshipit/cinder:2026.1-ubuntu_noble
+    cinder_backup_storage_init: quay.io/airshipit/ceph-config-helper:ubuntu_jammy_20.2.1-1-20260407
+
+manifests:
+  job_image_repo_sync: false
+#  secret_ceph_client: false
+#  job_backup_storage_init: false
+#  job_storage_init: false
+
+storage: rbd
+
+volume:
+  size: 5Gi
+
+pod:
+  replicas:
+    api: 1
+    scheduler: 1
+    volume: 1
+
+#  security_context:
+#    cinder_volume:
+#      pod:
+#        runAsUser: 0
+#      container:
+#        cinder_volume:
+#          runAsUser: 0
+#          privileged: true
+#
+#conf:
+#  cinder:
+#    DEFAULT:
+#      enabled_backends: lvm
+#      default_volume_type: lvm
+#
+#    lvm:
+#      volume_driver: cinder.volume.drivers.lvm.LVMVolumeDriver
+#      volume_group: cinder-volumes
+#      target_protocol: iscsi
+#      target_helper: tgtadm
+#      volumes_dir: /var/lib/cinder/volumes
+
+network:
+  api:
+    ingress:
+      public: true
