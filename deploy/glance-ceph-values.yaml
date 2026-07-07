@@ -373,21 +373,21 @@ conf:
 
 network:
   api:
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        nginx.ingress.kubernetes.io/proxy-body-size: "0"
-        haproxy.org/path-rewrite: /
+    # Pod port the Service routes to; null => Kubernetes uses the Service port.
+    # A deployment override sets this (e.g. 443) to point at a TLS sidecar.
+    target_port: null
     external_policy_local: false
     node_port:
       enabled: false
       port: 30092
 
 volume:
+  class_name: general
+  size: 2Gi
+  accessModes:
+    - ReadWriteOnce
+
+volume_staging:
   class_name: general
   size: 2Gi
   accessModes:
@@ -493,14 +493,27 @@ secrets:
     admin: glance-rabbitmq-admin
     glance: glance-rabbitmq-user
   tls:
-    image:
-      api:
-        public: glance-tls-public
-        internal: glance-tls-api
+    # Client certificate this chart presents for all mTLS backend connections
+    # (MariaDB and RabbitMQ). Separate from the MariaDB and RabbitMQ server certs.
+    client:
+      glance: glance-client
+    # CA bundle this chart trusts for OUTBOUND TLS calls (keystone). Null by
+    # default -> no CA is mounted and REQUESTS_CA_BUNDLE is left unset. A
+    # deployment override points this at a cert-manager CA-only secret carrying
+    # just ca.crt (no private key); it is mounted at
+    # /etc/ssl/certs/openstack-helm.crt. Assumes every server cert is signed by
+    # this single CA. The chart stays TLS-agnostic -- server certs and the nginx
+    # TLS sidecar live in the override.
+    ca: null
   oci_image_registry:
     glance: glance-oci-image-registry
 
 # typically overridden by environmental
+identity:
+  openrc:
+    exclude_vars: []
+    extra_vars: []
+
 # values, but should include all endpoints
 # required by this chart
 endpoints:
@@ -749,16 +762,15 @@ endpoints:
       dns:
         default: 53
         protocol: UDP
-  ingress:
-    namespace: null
-    name: ingress
-    hosts:
-      default: ingress
-    port:
-      ingress:
-        default: 80
 
 pod:
+  # -- Extra sidecar containers and volumes to inject into the glance-api
+  ## Deployment. Used e.g. by values_overrides/glance/api-tls.yaml to add an
+  ## nginx TLS-terminating sidecar. Keyed per component.
+  extraContainers:
+    glance_api: []
+  extraVolumes:
+    glance_api: []
   security_context:
     glance:
       pod:
@@ -773,9 +785,6 @@ pod:
         glance_api:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
-        nginx:
-          readOnlyRootFilesystem: false
-          runAsUser: 0
     clean:
       pod:
         runAsUser: 42424
@@ -979,16 +988,13 @@ pod:
           cpu: "2000m"
 
 tls:
-  identity: false
   oslo_messaging: false
   oslo_db: false
 
 manifests:
-  certificates: false
   configmap_bin: true
   configmap_etc: true
   deployment_api: true
-  ingress_api: true
   job_bootstrap: true
   job_clean: true
   job_db_init: true
@@ -1004,13 +1010,12 @@ manifests:
   pdb_api: true
   pod_rally_test: true
   pvc_images: true
+  pvc_tmp: true
   network_policy: false
   secret_db: true
-  secret_ingress_tls: true
   secret_keystone: true
   secret_rabbitmq: true
   secret_registry: true
-  service_ingress_api: true
   service_api: true
 
 # NOTE: This is for enable helm resource-policy to keep glance-images PVC.
@@ -1019,4 +1024,34 @@ manifests:
 # set keep_pvc: false when disallow helm resource-policy to keep for PVC.
 # This will allow helm to delete the PVC.
 keep_pvc: true
+
+# -- Array of extra K8s manifests to deploy
+## Note: Supports use of custom Helm templates
+extraObjects: []
+  # - apiVersion: secrets-store.csi.x-k8s.io/v1
+  #   kind: SecretProviderClass
+  #   metadata:
+  #     name: osh-secrets-store
+  #   spec:
+  #     provider: aws
+  #     parameters:
+  #       objects: |
+  #         - objectName: "osh"
+  #           objectType: "secretsmanager"
+  #           jmesPath:
+  #               - path: "client_id"
+  #                 objectAlias: "client_id"
+  #               - path: "client_secret"
+  #                 objectAlias: "client_secret"
+  #     secretObjects:
+  #     - data:
+  #       - key: client_id
+  #         objectName: client_id
+  #       - key: client_secret
+  #         objectName: client_secret
+  #       secretName: osh-secrets-store
+  #       type: Opaque
+  #       labels:
+  #         app.kubernetes.io/part-of: osh
+...
 

@@ -13,9 +13,6 @@ images:
 
 manifests:
   job_image_repo_sync: false
-#  secret_ceph_client: false
-#  job_backup_storage_init: false
-#  job_storage_init: false
 
 storage: rbd
 
@@ -52,5 +49,6 @@ pod:
 
 network:
   api:
-    ingress:
-      public: true
+    # Pod port the Service routes to; null => Kubernetes uses the Service port.
+    # A deployment override sets this (e.g. 443) to point at a TLS sidecar.
+    target_port: null
