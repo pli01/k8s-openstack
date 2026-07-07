@@ -2,9 +2,9 @@ rook-ceph rook-release/rook-ceph v1.19.7
 rook-ceph-cluster rook-release/rook-ceph-cluster v1.19.7
 ingress-nginx ingress-nginx/ingress-nginx 4.15.1
 ceph-adapter-rook openstack-helm/ceph-adapter-rook 2026.1.3+a659ab8a2
-rabbitmq openstack-helm/rabbitmq 2026.1.1+a2a343968
-mariadb openstack-helm/mariadb 2026.1.3+a2a343968
-memcached openstack-helm/memcached 2026.1.0+a2a343968
+rabbitmq openstack-helm/rabbitmq 2026.1.2+a659ab8a2
+mariadb openstack-helm/mariadb 2026.1.4+a659ab8a2
+memcached openstack-helm/memcached 2026.1.0+a659ab8a2
 keystone openstack-helm/keystone 2026.1.5+a2a343968
 glance openstack-helm/glance 2026.1.5+bad57716b
 cinder openstack-helm/cinder 2026.1.9+a2a343968
