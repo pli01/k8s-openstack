@@ -8,8 +8,8 @@ memcached openstack-helm/memcached 2026.1.0+a659ab8a2
 keystone openstack-helm/keystone 2026.1.11+50c697fc3
 glance openstack-helm/glance 2026.1.12+50c697fc3
 cinder openstack-helm/cinder 2026.1.15+50c697fc3
-heat openstack-helm/heat 2026.1.3+a2a343968
-designate openstack-helm/designate 2026.1.5+a2a343968
+heat openstack-helm/heat 2026.1.11+789d868ff
+designate openstack-helm/designate 2026.1.8+a659ab8a2
 openvswitch openstack-helm/openvswitch 2026.1.1+a2a343968
 libvirt openstack-helm/libvirt 2026.1.4+a2a343968
 placement openstack-helm/placement 2026.1.4+a2a343968
