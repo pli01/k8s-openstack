@@ -158,66 +158,32 @@ network:
   backend:
     - openvswitch
   osapi:
+    # Pod port the Service routes to; null => Kubernetes uses the Service port.
+    # A deployment override sets this (e.g. 443) to point at a TLS sidecar.
+    target_port: null
     port: 8774
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        haproxy.org/path-rewrite: /
     external_policy_local: false
     node_port:
       enabled: false
       port: 30774
   metadata:
+    # Pod port the Service routes to; null => Kubernetes uses the Service port.
+    # A deployment override sets this (e.g. 443) to point at a TLS sidecar.
+    target_port: null
     port: 8775
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        haproxy.org/path-rewrite: /
     external_policy_local: false
     node_port:
       enabled: false
       port: 30775
   novncproxy:
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        haproxy.org/path-rewrite: /
     node_port:
       enabled: false
       port: 30680
   serialproxy:
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        haproxy.org/path-rewrite: /
     node_port:
       enabled: false
       port: 30683
   spiceproxy:
-    ingress:
-      public: true
-      classes:
-        namespace: "ingress-openstack"
-        cluster: "ingress-cluster"
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        haproxy.org/path-rewrite: /
     node_port:
       enabled: false
       port: 30682
@@ -575,15 +541,6 @@ conf:
     # Requires mod_headers to be enabled.
     #
     #Header set X-Frame-Options: "sameorigin"
-  software:
-    apache2:
-      binary: apache2
-      start_parameters: -DFOREGROUND
-      conf_dir: /etc/apache2/conf-enabled
-      site_dir: /etc/apache2/sites-enable
-      mods_dir: /etc/apache2/mods-available
-      a2enmod: null
-      a2dismod: null
   ceph:
     enabled: true
     admin_keyring: null
@@ -1626,23 +1583,24 @@ secrets:
     admin: nova-rabbitmq-admin
     nova: nova-rabbitmq-user
   tls:
-    oslo_db:
-      nova:
-        internal: nova-mariadb-client
-    compute:
-      osapi:
-        public: nova-tls-public
-        internal: nova-tls-api
+    # Client certificate this chart presents for all mTLS backend connections
+    # (MariaDB and RabbitMQ). Separate from the MariaDB and RabbitMQ server certs.
+    client:
+      nova: nova-client
+    # CA bundle this chart trusts for OUTBOUND TLS calls (keystone, placement,
+    # nova-metadata). Null by default -> no CA is mounted and REQUESTS_CA_BUNDLE
+    # is left unset. A deployment override points this at a cert-manager CA-only
+    # secret carrying just ca.crt (no private key); it is mounted at
+    # /etc/ssl/certs/openstack-helm.crt. Assumes every server cert is signed by
+    # this single CA. The chart stays TLS-agnostic -- server certs and the nginx
+    # TLS sidecar live in the override.
+    ca: null
     compute_novnc_proxy:
       novncproxy:
         public: nova-novncproxy-tls-public
         internal: nova-novncproxy-tls-proxy
       vencrypt:
         internal: nova-novncproxy-vencrypt
-    compute_metadata:
-      metadata:
-        public: metadata-tls-public
-        internal: metadata-tls-metadata
     compute_spice_proxy:
       spiceproxy:
         public: nova-spiceproxy-tls-public
@@ -2086,16 +2044,17 @@ endpoints:
       dns:
         default: 53
         protocol: UDP
-  ingress:
-    namespace: null
-    name: ingress
-    hosts:
-      default: ingress
-    port:
-      ingress:
-        default: 80
 
 pod:
+  # -- Extra sidecar containers and volumes to inject into the nova API
+  ## Deployments. Used e.g. by values_overrides/nova/api-tls.yaml to add an
+  ## nginx TLS-terminating sidecar. Keyed per API component.
+  extraContainers:
+    nova_osapi: []
+    nova_metadata: []
+  extraVolumes:
+    nova_osapi: []
+    nova_metadata: []
   probes:
     rpc_timeout: 60
     rpc_retries: 2
@@ -2655,12 +2614,10 @@ health_probe:
     level: ERROR
 
 tls:
-  identity: false
   oslo_messaging: false
   oslo_db: false
 
 manifests:
-  certificates: false
   compute_uuid_self_provisioning: true
   configmap_bin: true
   configmap_etc: true
@@ -2681,11 +2638,6 @@ manifests:
   # This ensures service names remain stable across pod restarts.
   statefulset_conductor: false
   statefulset_scheduler: false
-  ingress_metadata: true
-  ingress_novncproxy: true
-  ingress_serialproxy: true
-  ingress_spiceproxy: true
-  ingress_osapi: true
   job_bootstrap: true
   job_storage_init: true
   job_db_init: true
@@ -2704,17 +2656,11 @@ manifests:
   secret_db_api: true
   secret_db_cell0: true
   secret_db: true
-  secret_ingress_tls: true
   secret_keystone: true
   secret_ks_etc: true
   secret_rabbitmq: true
   secret_registry: true
   secret_ssh: true
-  service_ingress_metadata: true
-  service_ingress_novncproxy: true
-  service_ingress_serialproxy: true
-  service_ingress_spiceproxy: true
-  service_ingress_osapi: true
   service_metadata: true
   service_novncproxy: true
   service_serialproxy: true

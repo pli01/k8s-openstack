@@ -12,8 +12,8 @@ heat openstack-helm/heat 2026.1.11+789d868ff
 designate openstack-helm/designate 2026.1.8+a659ab8a2
 openvswitch openstack-helm/openvswitch 2026.1.1+a659ab8a2
 libvirt openstack-helm/libvirt 2026.1.4+a659ab8a2
-placement openstack-helm/placement 2026.1.4+a2a343968
-nova openstack-helm/nova 2026.1.8+a2a343968
+placement openstack-helm/placement 2026.1.8+50c697fc3
+nova openstack-helm/nova 2026.1.14+50c697fc3
 neutron openstack-helm/neutron 2026.1.9+a2a343968
 horizon openstack-helm/horizon 2026.1.3+a2a343968
 netbox netbox/netbox 8.3.18
