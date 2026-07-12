@@ -5,10 +5,10 @@ ceph-adapter-rook openstack-helm/ceph-adapter-rook 2026.1.3+a659ab8a2
 rabbitmq openstack-helm/rabbitmq 2026.1.2+a659ab8a2
 mariadb openstack-helm/mariadb 2026.1.4+a659ab8a2
 memcached openstack-helm/memcached 2026.1.0+a659ab8a2
-keystone openstack-helm/keystone 2026.1.11+50c697fc3
-glance openstack-helm/glance 2026.1.12+50c697fc3
-cinder openstack-helm/cinder 2026.1.15+50c697fc3
-heat openstack-helm/heat 2026.1.11+789d868ff
+keystone openstack-helm/keystone 2026.1.12+d6497c16f
+glance openstack-helm/glance 2026.1.13+d6497c16f
+cinder openstack-helm/cinder 2026.1.16+d6497c16f
+heat openstack-helm/heat 2026.1.12+d6497c16f
 designate openstack-helm/designate 2026.1.8+a659ab8a2
 openvswitch openstack-helm/openvswitch 2026.1.1+a659ab8a2
 libvirt openstack-helm/libvirt 2026.1.4+a659ab8a2
